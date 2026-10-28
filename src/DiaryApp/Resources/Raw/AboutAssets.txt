@@ -13,3 +13,5 @@ These files will be deployed with your package and will be accessible using Esse
 
 		var contents = reader.ReadToEnd();
 	}
+	
+	All assets for icons where gotten from [fonts.google.com/icons]
