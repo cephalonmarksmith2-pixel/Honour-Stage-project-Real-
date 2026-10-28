@@ -1,5 +1,9 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/DiaryApp.Core/DiaryApp.Core.csproj" />
     <Project Path="src/DiaryApp/DiaryApp.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DiaryApp.Tests/DiaryApp.Tests.csproj" />
   </Folder>
 </Solution>

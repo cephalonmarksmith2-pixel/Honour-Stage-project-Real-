@@ -1,0 +1,12 @@
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/bin/Debug/net10.0/DiaryApp.Core.deps.json
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/bin/Debug/net10.0/DiaryApp.Core.dll
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/bin/Debug/net10.0/DiaryApp.Core.pdb
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/obj/Debug/net10.0/DiaryApp.Core.GeneratedMSBuildEditorConfig.editorconfig
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/obj/Debug/net10.0/DiaryApp.Core.AssemblyInfoInputs.cache
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/obj/Debug/net10.0/DiaryApp.Core.AssemblyInfo.cs
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/obj/Debug/net10.0/DiaryApp.Core.csproj.CoreCompileInputs.cache
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/obj/Debug/net10.0/DiaryApp.Core.sourcelink.json
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/obj/Debug/net10.0/DiaryApp.Core.dll
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/obj/Debug/net10.0/refint/DiaryApp.Core.dll
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/obj/Debug/net10.0/DiaryApp.Core.pdb
+/home/marksmith/RiderProjects/Honour-Stage-project-Real-/src/DiaryApp.Core/obj/Debug/net10.0/ref/DiaryApp.Core.dll
