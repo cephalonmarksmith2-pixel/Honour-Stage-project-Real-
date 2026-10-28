@@ -8,6 +8,10 @@
 <TabBar>
     <ShellContent Title="Home" Icon="dotnet_bot.png" ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
     <ShellContent Title="Calendar"  ContentTemplate="{DataTemplate local:CalendarPage}" Route="CalendarPage" />
+    <ShellContent Title="ExercisePlanner"  ContentTemplate="{DataTemplate local:ExercisePlanner}" Route="ExercisePlanner" /> 
+    <ShellContent Title="Grath"  ContentTemplate="{DataTemplate local:Grath}" Route="Grath" /> 
+    <ShellContent Title="Notes"  ContentTemplate="{DataTemplate local:Notes}" Route="Notes" /> 
+    <ShellContent Title="Settings"  ContentTemplate="{DataTemplate local:Settings}" Route="Settings" /> 
 </TabBar> 
 
 </Shell>
