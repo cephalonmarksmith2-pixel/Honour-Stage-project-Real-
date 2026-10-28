@@ -9,6 +9,13 @@
     <ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Route="MainPage" 
+    />
+
+    <ShellContent
+    Title="CalendarPage"
+    ContentTemplate="{DataTemplate local:CalendarPage}"
+    Route="CalendarPage" 
+    />
 
 </Shell>
