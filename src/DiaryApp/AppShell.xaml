@@ -4,18 +4,10 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:DiaryApp"
-    Title="DiaryApp">
-
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" 
-    />
-
-    <ShellContent
-    Title="CalendarPage"
-    ContentTemplate="{DataTemplate local:CalendarPage}"
-    Route="CalendarPage" 
-    />
+    Title="DiaryApp">   
+<TabBar>
+    <ShellContent Title="Home" Icon="dotnet_bot.png" ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
+    <ShellContent Title="Calendar"  ContentTemplate="{DataTemplate local:CalendarPage}" Route="CalendarPage" />
+</TabBar> 
 
 </Shell>

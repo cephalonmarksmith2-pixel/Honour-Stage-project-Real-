@@ -9,8 +9,10 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 	}
 
-	private void OnCounterClicked(object? sender, EventArgs e)
+	private async void OnCounterClicked(object? sender, EventArgs e)
 	{
+		await 		Shell.Current.GoToAsync("//CalendarPage");	
+
 		count++;
 
 		if (count == 1)
