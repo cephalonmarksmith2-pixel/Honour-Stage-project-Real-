@@ -49,3 +49,4 @@ public class NoteStorageTests : IDisposable
         Assert.Contains("Flat route", loaded.Links);
     }
 }
+

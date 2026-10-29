@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-
+using System.Globalization;   
 namespace DiaryApp.Models;
 
 // Decide the mood choices yourself. Your graph has "happy", "sad" and "in between" zones.
@@ -84,29 +84,29 @@ public static class NoteParser
 
 public static class NoteSearch
 {
-    // Returns the notes that match the query. Never returns null: no matches is an empty list.
-    public static List<Note> Find(List<Note> notes, string query)
+    private static readonly StringComparer TitleComparer = StringComparer.Create(
+        CultureInfo.InvariantCulture,
+        CompareOptions.IgnoreCase | CompareOptions.NumericOrdering);
+    public static List<Note> Find(List<Note> notes, string? query = null, Mood? mood = null, DateOnly? date = null)
     {
-        var results = new List<Note>();
+        string text = (query ?? "").Trim();
+        bool hasQuery = text.Length > 0;
 
-        // TODO: what should come back if the query is empty or only spaces?
-        if string.IsNullOrWhiteSpace(query)
-        {
-            // Sorts by title. OrdinalIgnoreCase compares character codes ignoring capitals, so digits
-            // (which come before letters) sort first, and "apple" and "Banana" sort together properly.
-            List<Note> sorted = notes
-                .OrderBy(n => n.Title, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(n => n.Date)       // if two notes have the same title, older first
-                .ToList();                 // OrderBy gives a lazy sequence; ToList turns it into a List
-        }
-        
+        var matches = new List<Note>();
 
         foreach (var note in notes)
         {
-            // TODO: does this note's Title contain the query, ignoring capitals? yes the title would be the quary 
-            // Later: also match NoteText, Mood and Date.
+            bool titleOk = !hasQuery || note.Title.Contains(text, StringComparison.OrdinalIgnoreCase);
+            bool moodOk  = mood == null || note.Mood == mood;
+            bool dateOk  = date == null || note.Date == date;
+
+            if (titleOk && moodOk && dateOk)
+                matches.Add(note);
         }
 
-        return results;
+        return matches
+            .OrderBy(n => n.Title, TitleComparer)
+            .ThenBy(n => n.Date)
+            .ToList();
     }
 }
