@@ -9,8 +9,6 @@ public enum Mood
     Happy,
     Sad,
     Neutral,
-    
-    
 }
 
 /// <summary>
@@ -20,32 +18,12 @@ public class Note
 {
     public DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.Today);
     public List<string> Links { get; set; } = new();
-    public string NoteName { get; set; } 
     public string? NoteText { get; set; }
     public Mood Mood { get; set; } = Mood.Neutral;
-    public string? NoteLink { get; set; }
     public string Exercise { get; set; } = "Unassigned";
+    public string Title { get; set; } = "Unassigned";
     
-    // TODO: what uniquely identifies one note? a note is made by a user as a txt file 
-    // TODO: what do you need to SEARCH by? (title, date...) title date and mood
-    // TODO: what do you need to SHOW? (the text itself...) text links and the mood 
-    // TODO: what does the graph need to GROUP by? (mood, exercise category...) can be chosen by the user but has to be atleast mood exercise and date
 }
-
-
-public class NoteSearch
-{
-    public List<Note> Notes { get; set; }
-    
-    static void FindNotes(List<Note> notes)
-    {
-        foreach (var note in notes)
-        {
-            
-        }
-    }
-}
-
 
 public static class NoteParser
 {
@@ -59,7 +37,7 @@ public static class NoteParser
 
     public static Note Parse(string noteName, string rawText)
     {
-        var note = new Note { NoteName = noteName };
+        var note = new Note { Title = noteName }; 
 
         // Step 1: read every [key:value] tag
         foreach (Match m in PropertyPattern.Matches(rawText))
@@ -69,6 +47,9 @@ public static class NoteParser
 
             switch (key)
             {
+                case "title":              
+                    note.Title = value;    
+                    break;
                 case "mood":
                     // TryParse returns true on success and fills 'mood'. On failure, keep the default.
                     if (Enum.TryParse(value, true, out Mood mood))
@@ -98,5 +79,34 @@ public static class NoteParser
         // TODO: no exercise tag found? Leave Exercise as "Unassigned"
 
         return note;
+    }
+}
+
+public static class NoteSearch
+{
+    // Returns the notes that match the query. Never returns null: no matches is an empty list.
+    public static List<Note> Find(List<Note> notes, string query)
+    {
+        var results = new List<Note>();
+
+        // TODO: what should come back if the query is empty or only spaces?
+        if string.IsNullOrWhiteSpace(query)
+        {
+            // Sorts by title. OrdinalIgnoreCase compares character codes ignoring capitals, so digits
+            // (which come before letters) sort first, and "apple" and "Banana" sort together properly.
+            List<Note> sorted = notes
+                .OrderBy(n => n.Title, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(n => n.Date)       // if two notes have the same title, older first
+                .ToList();                 // OrderBy gives a lazy sequence; ToList turns it into a List
+        }
+        
+
+        foreach (var note in notes)
+        {
+            // TODO: does this note's Title contain the query, ignoring capitals? yes the title would be the quary 
+            // Later: also match NoteText, Mood and Date.
+        }
+
+        return results;
     }
 }

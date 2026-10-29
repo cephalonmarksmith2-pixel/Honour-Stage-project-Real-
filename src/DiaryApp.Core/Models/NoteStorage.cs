@@ -4,21 +4,50 @@ public class NoteStorage
 {
     private readonly string _folder;
 
-    // The caller decides the folder. Tests use a temp one, the phone app uses its own.
+    // The caller supplies the folder: tests pass a temp one, the phone app passes its private one
     public NoteStorage(string folder)
     {
         _folder = folder;
-        Directory.CreateDirectory(_folder); // does nothing if it already exists
+        Directory.CreateDirectory(_folder);   // does nothing if it already exists
     }
 
-    // TODO: Save(Note note)
-    //   - which file name? (think about invalid characters: Path.GetInvalidFileNameChars)
-    //   - what text goes in the file? (you need the reverse of Parse)
-    //   - File.WriteAllText(path, text)
+    // The ONE place a title turns into a path. Saving and link lookups both use it,
+    // so [[Hill route]] and Hill-route.md always agree.
+    private string PathFor(string title) =>
+        Path.Combine(_folder, FileNames.MakeSafe(title) + ".md");
 
-    // TODO: List<Note> LoadAll()
-    //   - Directory.GetFiles(_folder, "*.md")
-    //   - for each file: File.ReadAllText, then NoteParser.Parse(Path.GetFileNameWithoutExtension(path), text)
+    public void Save(Note note)
+    {
+        // TODO (your decision): this overwrites silently. If "my note" and "my-note" map to the same
+        // file, the second would replace the first. How would you detect that? (Hint: load the
+        // existing file and compare titles.)
+        File.WriteAllText(PathFor(note.Title), NoteWriter.ToFileText(note));
+    }
 
-    // TODO: Delete(string noteName)
+    // Finds a note by its title, or returns null if there isn't one
+    public Note? Load(string title)
+    {
+        string path = PathFor(title);
+        return File.Exists(path) ? ReadFile(path) : null;
+    }
+
+    public List<Note> LoadAll()
+    {
+        var notes = new List<Note>();
+        foreach (string path in Directory.GetFiles(_folder, "*.md"))
+            notes.Add(ReadFile(path));
+        return notes;
+    }
+
+    public bool Delete(string title)
+    {
+        string path = PathFor(title);
+        if (!File.Exists(path)) return false;
+        File.Delete(path);
+        return true;
+    }
+
+    // If a file has no [title:] tag, Parse falls back to the file name we pass in here
+    private static Note ReadFile(string path) =>
+        NoteParser.Parse(Path.GetFileNameWithoutExtension(path), File.ReadAllText(path));
 }
