@@ -18,9 +18,6 @@ public class NoteStorage
 
     public void Save(Note note)
     {
-        // TODO (your decision): this overwrites silently. If "my note" and "my-note" map to the same
-        // file, the second would replace the first. How would you detect that? (Hint: load the
-        // existing file and compare titles.)
         File.WriteAllText(PathFor(note.Title), NoteWriter.ToFileText(note));
     }
 

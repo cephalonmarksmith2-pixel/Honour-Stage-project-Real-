@@ -3,10 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="DiaryApp.Notes"
              Title="Notes">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to notes!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    
+    
+
+<Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <SearchBar Placeholder="Search items..." Grid.Row="0"/>
+    <Label Text="By default, a Grid contains one row and one column." Grid.Row="1"/>
+</Grid>
 </ContentPage>
+ 

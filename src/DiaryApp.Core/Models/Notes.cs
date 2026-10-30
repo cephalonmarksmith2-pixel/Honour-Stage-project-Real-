@@ -25,6 +25,9 @@ public class Note
     
 }
 
+/// <summary>
+/// Parses notes based on mood title or date
+/// </summary>
 public static class NoteParser
 {
     // Matches [key:value] but NOT [[links]]. Group 1 = key, Group 2 = value.
@@ -82,11 +85,22 @@ public static class NoteParser
     }
 }
 
+/// <summary>
+/// finds notes based on an input
+/// </summary>
 public static class NoteSearch
 {
     private static readonly StringComparer TitleComparer = StringComparer.Create(
         CultureInfo.InvariantCulture,
         CompareOptions.IgnoreCase | CompareOptions.NumericOrdering);
+    /// <summary>
+    /// Finds the note based on paramiters
+    /// </summary>
+    /// <param name="notes">All of the notes in the note class</param>
+    /// <param name="query">Inital input</param>
+    /// <param name="mood">If a user for a mood i.e. happy</param>
+    /// <param name="date">If user seatches by date </param>
+    /// <returns></returns>
     public static List<Note> Find(List<Note> notes, string? query = null, Mood? mood = null, DateOnly? date = null)
     {
         string text = (query ?? "").Trim();
