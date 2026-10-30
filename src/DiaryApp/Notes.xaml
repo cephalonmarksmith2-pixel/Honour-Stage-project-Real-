@@ -3,18 +3,32 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="DiaryApp.Notes"
              Title="Notes">
-    
-    
 
-<Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="*" />
-    </Grid.RowDefinitions>
+    <Grid>
+        <!-- Row 0: search bar (as tall as it needs)
+             Row 1: the "5 notes" text (as tall as it needs)
+             Row 2: the list, which takes all the remaining space (*) -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-    <SearchBar Placeholder="Search items..." Grid.Row="0"/>
-    <Label x:Name="StatusLabel" Text="Notes go hear " Grid.Row="1" />
-    <ListView x:Name="searchResults" />
-</Grid>
+<SearchBar Placeholder="Search notes..." Grid.Row="0" TextChanged="OnTextChanged" />
+        <Label x:Name="StatusLabel" Grid.Row="1" Margin="12,4" />
+
+        <CollectionView x:Name="NotesList" Grid.Row="2">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <!-- This is the design of ONE row. A template can hold only one root element,
+                         so the three labels sit together inside a VerticalStackLayout -->
+                    <VerticalStackLayout Padding="12,8">
+                        <Label Text="{Binding Title}" FontSize="18" />
+                        <Label Text="{Binding Mood}" FontSize="12" />
+                        <Label Text="{Binding Date}" FontSize="12" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
 </ContentPage>
- 
