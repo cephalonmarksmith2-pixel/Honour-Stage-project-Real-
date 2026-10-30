@@ -13,7 +13,8 @@
     </Grid.RowDefinitions>
 
     <SearchBar Placeholder="Search items..." Grid.Row="0"/>
-    <Label Text="By default, a Grid contains one row and one column." Grid.Row="1"/>
+    <Label x:Name="StatusLabel" Text="Notes go hear " Grid.Row="1" />
+    <ListView x:Name="searchResults" />
 </Grid>
 </ContentPage>
  
