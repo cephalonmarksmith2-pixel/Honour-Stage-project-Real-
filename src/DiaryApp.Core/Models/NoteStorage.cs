@@ -70,6 +70,43 @@ public class NoteStorage
         return true;
     }
 
+// ---------- Creating notes ----------
+
+// Returns baseTitle if no note has that file name yet; otherwise "baseTitle 2", "baseTitle 3", ...
+public string UniqueTitle(string baseTitle)
+{
+    // A blank base title would produce a confusing file name, so I used a sensible default
+    if (string.IsNullOrWhiteSpace(baseTitle))
+        baseTitle = "Untitled";
+
+    string candidate = baseTitle;
+    int counter = 2;
+
+    // PathFor uses MakeSafe, so "my note" and "my-note" count as the same file, which is what I want
+    while (File.Exists(PathFor(candidate)))
+    {
+        candidate = $"{baseTitle} {counter}";   // try the next number
+        counter++;                               
+    }
+
+    return candidate;
+}
+
+// Makes a new, empty note with a unique title, SAVES it, and returns it.
+// Mood and date start at the Note defaults (neutral, today).
+public Note CreateNew(string baseTitle = "Untitled", string exercise = "Unassigned")
+{
+    var note = new Note
+    {
+        Title = UniqueTitle(baseTitle),
+        Exercise = exercise,
+        NoteText = ""
+    };
+
+    Save(note);
+    return note;
+}
+
     // ---------- Drafts ----------
 
     // Saves unsaved edits. The draft is filed under the title the note had when editing STARTED

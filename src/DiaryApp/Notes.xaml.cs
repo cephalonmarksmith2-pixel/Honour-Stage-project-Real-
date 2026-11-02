@@ -41,11 +41,14 @@ public partial class Notes : ContentPage
     }
 
     // ---------- Event handlers: things the user does ----------
-   // Runs when the user taps the add button 
+// Runs when the user taps the add button (wired up in Notes.xaml)
 private async void OnAddClicked(object? sender, EventArgs e)
 {
-    // No title parameter this time: the editor will start with a blank note (the next step)
-    await Shell.Current.GoToAsync("NoteEdit");
+    // Makes and SAVES a new note ("Untitled", or "Untitled 2" if that's taken) and hands it back
+    var note = _storage.CreateNew();
+
+    // Open it in the editor, plus a marker saying it's brand new
+    await Shell.Current.GoToAsync($"NoteEdit?title={Uri.EscapeDataString(note.Title)}&isNew=true");
 }
 
     // Runs every time the text in the search box changes

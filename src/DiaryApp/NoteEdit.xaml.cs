@@ -5,6 +5,7 @@ namespace DiaryApp;
 
 // Shell copies the "title" parameter from the navigation into NoteTitle
 [QueryProperty(nameof(NoteTitle), "title")]
+[QueryProperty(nameof(IsNew), "isNew")]
 public partial class NoteEdit : ContentPage
 {
     // ---------- Fields: data the page keeps ----------
@@ -17,7 +18,7 @@ public partial class NoteEdit : ContentPage
 
     // ---------- Properties ----------
 
-    // Set by Shell AFTER the constructor has run, which is why loading happens in OnAppearing
+    public string IsNew { get; set; } = "";     // "true" when the + button has just created this note
     public string NoteTitle { get; set; } = "";
 
     // ---------- Constructor ----------
@@ -77,16 +78,35 @@ public partial class NoteEdit : ContentPage
         ShowNoteInBoxes(_note);
     }
 
-    // Leaving the page (back arrow, back button, or navigating elsewhere) commits the note quietly
+    // Leaving the page (back arrow, back button, or navigating elsewhere)
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
 
-        if (_note == null) return;
+        if (_note == null) return;   // nothing was loaded, so there is nothing to save or delete
+
+        // "Untouched" means nothing the user deliberately changed:
+        // no text, the title is still the generated one, and the exercise is still the starting value
+        bool isUntouched =
+            string.IsNullOrWhiteSpace(TextEditor.Text)
+            && (TitleEntry.Text ?? "").Trim() == _originalTitle
+            && (ExerciseEntry.Text ?? "") == _note.Exercise;
+
+        // A brand-new note that was never used: throw it away instead of leaving clutter in the list
+        if (IsNew == "true" && isUntouched)
+        {
+            _draftTimer?.Stop();                  // so a pending countdown can't write a draft afterwards
+            _storage.Delete(_originalTitle);
+            _storage.DeleteDraft(_originalTitle);
+            IsNew = "";
+            return;                               // nothing left to commit
+        }
+
+        IsNew = "";                               // from now on this page no longer counts as "brand new"
         CopyBoxesIntoNote();
         CommitNote();
     }
-
+    
     // ---------- Event handlers: things the user does ----------
 
     // Runs on ANY change to the title, exercise, text, mood or date (wired up in NoteEdit.xaml).

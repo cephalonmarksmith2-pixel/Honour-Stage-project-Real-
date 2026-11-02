@@ -16,14 +16,7 @@
 
 <SearchBar Placeholder="Search notes..." Grid.Row="0" TextChanged="OnTextChanged" />
         <Label x:Name="StatusLabel" Grid.Row="1" Margin="12,4" />
-<!-- Floating "add note" button: shares the list's cell (row 2), pushed to the bottom right -->
-<ImageButton Source="add.png"
-             SemanticProperties.Description="Add note"
-             Padding="5"
-             WidthRequest="48" HeightRequest="48" CornerRadius="24"
-             BackgroundColor="{StaticResource Primary}"
-             Grid.Row="2" HorizontalOptions="End" VerticalOptions="End" Margin="16"
-             Clicked="OnAddClicked" />        <CollectionView x:Name="NotesList" Grid.Row="2" SelectionMode="Single" SelectionChanged="OnNoteSelected">
+       <CollectionView x:Name="NotesList" Grid.Row="2" SelectionMode="Single" SelectionChanged="OnNoteSelected">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <!-- This is the design of ONE row. A template can hold only one root element,
@@ -36,5 +29,12 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+<ImageButton Source="add.png"
+             SemanticProperties.Description="Add note"
+             Padding="5"
+             WidthRequest="48" HeightRequest="48" CornerRadius="24"
+             BackgroundColor="{StaticResource Primary}"
+             Grid.Row="2" HorizontalOptions="End" VerticalOptions="End" Margin="16"
+             Clicked="OnAddClicked" /> 
     </Grid>
 </ContentPage>
