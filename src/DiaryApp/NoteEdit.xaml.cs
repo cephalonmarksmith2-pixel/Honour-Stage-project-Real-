@@ -1,12 +1,17 @@
+using DiaryApp.Models;
+
 namespace DiaryApp;
-using DiaryApp.Models;   // so NoteStorage, Note, Mood and NoteSearch can be found
 
 public partial class NoteEdit : ContentPage
 {
-    //private readonly enum Mood;
-    
-    public NoteEdit()
+    private readonly NoteStorage _storage;
+
+    // The app hands us the storage (register this page as transient in MauiProgram.cs)
+    public NoteEdit(NoteStorage storage)
     {
+        // TODO: keep the storage, then InitializeComponent(), then fill the mood picker
+        _storage = storage;
         InitializeComponent();
+        MoodPicker.ItemsSource = Enum.GetValues<Mood>();
     }
 }
