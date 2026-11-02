@@ -4,14 +4,19 @@
              x:Class="DiaryApp.NoteEdit"
              Title="Edit note">
 
+    <!-- The Save button in the page's top bar -->
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Save" Clicked="OnSaveClicked" />
+    </ContentPage.ToolbarItems>
+
     <Grid>
-        <!-- Rows:    0 = title, 1 = mood + exercise, 2 = the text (takes all the remaining space), 3 = date
-             Columns: two equal halves, so two controls can sit side by side -->
+        <!-- Rows:    0 = title, 1 = mood + exercise + date, 2 = the text (takes all the remaining space)
+             Columns: three equal parts, so three controls can sit side by side.
+             Every box reports changes to OnAnyBoxChanged, which restarts the draft-save countdown. -->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -19,22 +24,25 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!-- Title: row 0, spans both columns -->
+        <!-- Title: row 0, spans all three columns -->
         <Entry x:Name="TitleEntry" Placeholder="Title"
-               Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="12,4" />
+               TextChanged="OnAnyBoxChanged"
+               Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="12,4" />
 
-        <!-- Mood (left) and Exercise (Middel) and NoteDatePickeer (right) share row 1, one column each -->
+        <!-- Mood (left), Exercise (middle) and Date (right) share row 1, one column each -->
         <Picker x:Name="MoodPicker" Title="Mood"
+                SelectedIndexChanged="OnAnyBoxChanged"
                 Grid.Row="1" Grid.Column="0" Margin="12,4" />
         <Entry x:Name="ExerciseEntry" Placeholder="Exercise"
+               TextChanged="OnAnyBoxChanged"
                Grid.Row="1" Grid.Column="1" Margin="12,4" />
         <DatePicker x:Name="NoteDatePicker"
+                    DateSelected="OnAnyBoxChanged"
                     Grid.Row="1" Grid.Column="2" Margin="12,4" />
 
         <!-- The note text: row 2 is the * row, so it fills whatever space is left -->
         <Editor x:Name="TextEditor" Placeholder="Write your note here..."
-                Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="12,4" />
-
-        
+                TextChanged="OnAnyBoxChanged"
+                Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="12,4" />
     </Grid>
 </ContentPage>

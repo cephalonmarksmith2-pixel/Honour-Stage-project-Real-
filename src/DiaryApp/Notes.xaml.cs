@@ -24,7 +24,6 @@ public partial class Notes : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();   // always first
-
 #if DEBUG
         // Test data only: if the folder is empty, save the sample notes
         if (_storage.LoadAll().Count == 0)
@@ -42,12 +41,37 @@ public partial class Notes : ContentPage
     }
 
     // ---------- Event handlers: things the user does ----------
+   // Runs when the user taps the add button 
+private async void OnAddClicked(object? sender, EventArgs e)
+{
+    // No title parameter this time: the editor will start with a blank note (the next step)
+    await Shell.Current.GoToAsync("NoteEdit");
+}
 
-    // Runs every time the text in the search box changes (wired up in Notes.xaml)
+    // Runs every time the text in the search box changes
     private void OnTextChanged(object? sender, TextChangedEventArgs e)
     {
         // e.NewTextValue is what's in the box now; ?? "" turns null into an empty search
         ShowNotes(e.NewTextValue ?? "");
+    }
+
+    // Runs when the user taps a note in the list
+    private async void OnNoteSelected(object? sender, SelectionChangedEventArgs e)
+    {
+    // 1. Read the first selected item and treat it as a Note.
+    //    "as Note" gives null if it isn't a Note, and FirstOrDefault gives null if the list is empty.
+    var note = e.CurrentSelection.FirstOrDefault() as Note;
+
+    // 2. Nothing selected? Do nothing. 
+    if (note == null)
+        return;
+
+    // 3. Open the editor, passing the title in a parameter called "title".
+    //    EscapeDataString makes spaces and symbols safe to put in the text (i.e. "Long run","27 mile run!!").
+    await Shell.Current.GoToAsync($"NoteEdit?title={Uri.EscapeDataString(note.Title)}");
+
+    // 4. Clear the selection, so tapping the same note again works
+    NotesList.SelectedItem = null;
     }
 
     // ---------- Helpers ----------
