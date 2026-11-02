@@ -12,7 +12,6 @@
     <ShellContent Title="Graph" Icon="graph.svg" ContentTemplate="{DataTemplate local:Grath}" Route="Grath" /> 
     <ShellContent Title="Notes" Icon="notes.svg" ContentTemplate="{DataTemplate local:Notes}" Route="Notes" /> 
     <ShellContent Title="Settings" Icon="settings.svg" ContentTemplate="{DataTemplate local:Settings}" Route="Settings" />
-    <ShellContent Title="NoteEdit" Icon="notes.svg" ContentTemplate="{DataTemplate local:NoteEdit}" Route="NoteEdit" />
 
  
 </TabBar> 
