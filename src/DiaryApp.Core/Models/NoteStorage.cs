@@ -107,6 +107,25 @@ public Note CreateNew(string baseTitle = "Untitled", string exercise = "Unassign
     return note;
 }
 
+// Returns the note, and whether it had to be created.
+public (Note note, bool created) OpenOrCreate(string title)
+{
+    // Trim once and reuse it, so "  Swim " becomes "Swim" everywhere below.
+    string trimmed = (title ?? "").Trim();
+
+    // Look through every saved note for a match (ignores capitals).
+    var localNotes = LoadAll();
+    var existing = NoteLinks.Resolve(trimmed, localNotes);
+
+    // Found it: hand it back, and say nothing was created.
+    if (existing is not null)
+        return (existing, false);
+
+    // Not found: create it. CreateNew picks a free name and saves the file.
+    var newNote = CreateNew(trimmed);
+    return (newNote, true);
+}
+
     // ---------- Drafts ----------
 
     // Saves unsaved edits. The draft is filed under the title the note had when editing STARTED

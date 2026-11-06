@@ -175,31 +175,33 @@ public partial class NoteEdit : ContentPage
     private void CommitNote()
     {
         if (_note == null) return;
+        _draftTimer?.Stop();
 
-        _draftTimer?.Stop();   // no stale draft should be written after this
+        // TODO 1: Remove spaces from both ends of _note.Title.
+        //         (Which string method does that?)
 
-        // 1. Save first, so the note is never lost
-        _storage.Save(_note);
+        // TODO 2: Work out whether the FILE NAME changed.
+        //         Compare MakeSafe(_originalTitle) with MakeSafe(_note.Title).
+        //         Keep the answer in a bool, because you need it twice below.
 
-        // 2. If the title changed, the file name changed too, so remove the OLD file.
-        //    Compare file names (not titles): two different titles can map to the same file.
-        if (FileNames.MakeSafe(_originalTitle) != FileNames.MakeSafe(_note.Title))
-            _storage.Delete(_originalTitle);
+        // TODO 3: Only if the file name changed AND a file already exists for
+        //         the NEW title, swap in a free title.
+        //         - Use UniqueTitle here, and only here.
+        //         - Update both _note.Title and TitleEntry.Text so the user sees it.
+        //         - If the name did NOT change, leave the title alone. The file
+        //           existing is normal then, because it is the same note.
+        //         (You may need a small "does a file exist for this title?" method
+        //         in NoteStorage. Write it in Core so it can be tested.)
 
-        // 3. The real file is safe now, so the draft is no longer needed
-        _storage.DeleteDraft(_originalTitle);
+        // TODO 4: Save the note.
 
-        // 4. From now on, "the original" is what we just saved (so a second commit is harmless)
-        _originalTitle = _note.Title;
-    }
+        // TODO 5: If the name changed, delete the OLD file (_originalTitle).
+        //         Once, not twice.
 
-    // Writes only the DRAFT file. Used by the typing timer. Never touches the real note.
-    private void SaveDraft()
-    {
-        if (_note == null) return;
+        // TODO 6: Delete the draft that belongs to _originalTitle.
 
-        CopyBoxesIntoNote();
-        _storage.SaveDraft(_originalTitle, _note);
+        // TODO 7: Set _originalTitle to exactly what was just saved.
+        //         (No UniqueTitle here. The file exists now, so it would add " 2".)
     }
 
     // Builds the countdown: 1.5 seconds after the LAST change, it saves a draft
