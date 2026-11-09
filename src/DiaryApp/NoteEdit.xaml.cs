@@ -1,4 +1,4 @@
-using DiaryApp.Models;             // NoteStorage, Note, Mood, NoteWriter, FileNames
+using DiaryApp.Models;             // NoteStorage, Note, Mood, NoteWriter, FileNames, NoteSearch
 using Microsoft.Maui.Dispatching;  // IDispatcherTimer
 
 namespace DiaryApp;
@@ -44,7 +44,7 @@ public partial class NoteEdit : ContentPage
 
         var saved = _storage.Load(NoteTitle);
         if (saved == null)
-            return;   // nothing to show (later, this is where a brand-new note will start)
+            return;   // nothing to show
 
         _originalTitle = saved.Title;
         _note = saved;
@@ -106,14 +106,16 @@ public partial class NoteEdit : ContentPage
         CopyBoxesIntoNote();
         CommitNote();
     }
-    
-    // ---------- Event handlers: things the user does ----------
+
+    // ---------- Event handlers: editing the note ----------
 
     // Runs on ANY change to the title, exercise, text, mood or date (wired up in NoteEdit.xaml).
     // It doesn't save: it restarts the countdown, so a draft is saved when typing pauses.
     private void OnAnyBoxChanged(object? sender, EventArgs e)
     {
         if (_isLoading || _note == null || _draftTimer == null) return;
+
+        RefreshLinks();        // the text may have gained or lost a [[link]]
 
         _draftTimer.Stop();    // cancel the countdown in progress...
         _draftTimer.Start();   // ...and start a fresh one
@@ -138,7 +140,106 @@ public partial class NoteEdit : ContentPage
         await Shell.Current.GoToAsync("..");
     }
 
-    // ---------- Helpers ----------
+    // ---------- Event handlers: links ----------
+
+    // A link in the "links in this note" list was tapped: open that note, creating it if missing
+    private async void OnLinkTapped(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_note == null) return;
+
+        // The selected item is the raw link text, e.g. "[[Run 5|my 5k]]". "is not string" also covers null.
+        if (e.CurrentSelection.FirstOrDefault() is not string tapped) return;
+
+        LinksList.SelectedItem = null;   // clear it now, so the same link can be tapped again later
+
+        string title = NoteLinks.ParseLink(tapped).Title;   // strips [[ ]], trims, drops any |alias
+        if (string.IsNullOrWhiteSpace(title)) return;       // "[[]]" has nothing to open
+
+        // Save what the user has typed BEFORE leaving, so no edits are lost
+        CopyBoxesIntoNote();
+        CommitNote();
+
+        var (target, created) = _storage.OpenOrCreate(title);
+
+        if (created)
+            await DisplayAlertAsync("Note created", $"\"{target.Title}\" was created.", "OK");
+
+        // isNew=false: the user has just been told this note exists, so it should stay even if left blank
+        await Shell.Current.GoToAsync($"NoteEdit?title={Uri.EscapeDataString(target.Title)}&isNew=false");
+    }
+
+    // "Add link" button: show or hide the search panel
+    private void OnAddLinkClicked(object? sender, EventArgs e)
+    {
+        LinkPanel.IsVisible = !LinkPanel.IsVisible;
+
+        if (LinkPanel.IsVisible)
+            UpdateLinkResults(LinkSearch.Text);   // show the matches straight away
+    }
+
+    // The user typed in the link search box
+    private void OnLinkSearchChanged(object? sender, TextChangedEventArgs e)
+    {
+        UpdateLinkResults(e.NewTextValue);
+    }
+
+    // The user picked an existing note from the search results
+    private void OnLinkResultChosen(object? sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection.FirstOrDefault() is not Note chosen) return;
+
+        LinkResults.SelectedItem = null;
+        InsertLink(chosen.Title);
+    }
+
+    // "Create ..." button: insert a link to a note that doesn't exist yet
+    // (the note itself is only created later, when the link is tapped)
+    private void OnLinkCreateClicked(object? sender, EventArgs e)
+    {
+        string title = (LinkSearch.Text ?? "").Trim();
+        if (title.Length == 0) return;
+
+        InsertLink(title);
+    }
+
+    // ---------- Link helpers ----------
+
+    // Refills the "links in this note" list from the text currently in the editor
+    private void RefreshLinks()
+    {
+        LinksList.ItemsSource = NoteLinks.FindLinks(TextEditor.Text);
+    }
+
+    // Updates the search results, and shows the "Create" button when nothing matches exactly
+    private void UpdateLinkResults(string? query)
+    {
+        string q = (query ?? "").Trim();
+        var allNotes = _storage.LoadAll();
+
+        LinkResults.ItemsSource = NoteSearch.Find(allNotes, q);
+
+        // Offer to create only when something is typed and no note has exactly that title
+        LinkCreateButton.IsVisible = q.Length > 0 && NoteLinks.Resolve(q, allNotes) is null;
+        LinkCreateButton.Text = $"Create \"{q}\"";
+    }
+
+    // Puts [[title]] into the text at the cursor, then closes the panel
+    private void InsertLink(string title)
+    {
+        string link = $"[[{title}]]";
+        string text = TextEditor.Text ?? "";
+
+        // The cursor can be outside the text if the editor was never tapped, so keep it in range
+        int position = Math.Clamp(TextEditor.CursorPosition, 0, text.Length);
+
+        TextEditor.Text = text.Insert(position, link);          // triggers OnAnyBoxChanged (draft + links list)
+        TextEditor.CursorPosition = position + link.Length;     // cursor just after the new link
+
+        LinkSearch.Text = "";
+        LinkPanel.IsVisible = false;
+    }
+
+    // ---------- Saving: boxes, draft, final file ----------
 
     // Puts a note's values into the boxes. _isLoading stops this counting as typing.
     private void ShowNoteInBoxes(Note note)
@@ -152,9 +253,11 @@ public partial class NoteEdit : ContentPage
         NoteDatePicker.Date = note.Date.ToDateTime(TimeOnly.MinValue);   // DateOnly -> DateTime
 
         _isLoading = false;
+
+        RefreshLinks();   // OnAnyBoxChanged skipped the loading, so fill the links list here
     }
 
-    // Copies the boxes into _note. Shared by all three triggers; saves nothing.
+    // Copies the boxes into _note. Shared by all triggers; saves nothing.
     private void CopyBoxesIntoNote()
     {
         if (_note == null) return;
@@ -171,38 +274,53 @@ public partial class NoteEdit : ContentPage
         _note.Date = DateOnly.FromDateTime(NoteDatePicker.Date ?? DateTime.Today);
     }
 
-    // Writes the REAL file, handles a rename, deletes the draft. Used by Save and by leaving.
+    // Writes a draft file (the safety copy). Runs when the countdown ends.
+    private void SaveDraft()
+    {
+        if (_note == null) return;
+
+        CopyBoxesIntoNote();
+        _storage.SaveDraft(_originalTitle, _note);
+    }
+
+    // Writes the final file, handles a rename, deletes the draft. Used by Save, by leaving, and by link taps.
     private void CommitNote()
     {
         if (_note == null) return;
-        _draftTimer?.Stop();
+        _draftTimer?.Stop();   // no stale draft should be written after this
 
-        // TODO 1: Remove spaces from both ends of _note.Title.
-        //         (Which string method does that?)
+        // Remove stray spaces from the title, so "  Run 5 " is saved as "Run 5".
+        _note.Title = _note.Title.Trim();
 
-        // TODO 2: Work out whether the FILE NAME changed.
-        //         Compare MakeSafe(_originalTitle) with MakeSafe(_note.Title).
-        //         Keep the answer in a bool, because you need it twice below.
+        // Compare FILE NAMES, not titles: "my note" and "my-note" are the same file.
+        bool nameChanged = FileNames.MakeSafe(_originalTitle) != FileNames.MakeSafe(_note.Title);
 
-        // TODO 3: Only if the file name changed AND a file already exists for
-        //         the NEW title, swap in a free title.
-        //         - Use UniqueTitle here, and only here.
-        //         - Update both _note.Title and TitleEntry.Text so the user sees it.
-        //         - If the name did NOT change, leave the title alone. The file
-        //           existing is normal then, because it is the same note.
-        //         (You may need a small "does a file exist for this title?" method
-        //         in NoteStorage. Write it in Core so it can be tested.)
+        // Only a renamed note can clash with a different note. If the name did not
+        // change, the file existing is normal because it is this note's own file.
+        if (nameChanged && _storage.TitleIsTaken(_note.Title))
+        {
+            _note.Title = _storage.UniqueTitle(_note.Title);   // e.g. "Run 5" -> "Run 5 2"
+            TitleEntry.Text = _note.Title;                     // show the user the final name
+        }
 
-        // TODO 4: Save the note.
+        // Save BEFORE deleting anything, so the note is never lost.
+        _storage.Save(_note);
 
-        // TODO 5: If the name changed, delete the OLD file (_originalTitle).
-        //         Once, not twice.
+        if (nameChanged)
+        {
+            _storage.Delete(_originalTitle);
+            _storage.UpdateLinksAfterRename(_originalTitle, _note.Title);   // remove the "//" from the comment
+        }
 
-        // TODO 6: Delete the draft that belongs to _originalTitle.
+        // The real file is safe, so the draft is no longer needed.
+        _storage.DeleteDraft(_originalTitle);
 
-        // TODO 7: Set _originalTitle to exactly what was just saved.
-        //         (No UniqueTitle here. The file exists now, so it would add " 2".)
+        // The "original" is now exactly what we just saved. No UniqueTitle here,
+        // because the file exists now and it would add " 2".
+        _originalTitle = _note.Title;
     }
+
+    // ---------- Small helpers ----------
 
     // Builds the countdown: 1.5 seconds after the LAST change, it saves a draft
     private IDispatcherTimer CreateDraftTimer()

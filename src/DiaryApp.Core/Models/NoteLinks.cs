@@ -1,4 +1,5 @@
 using DiaryApp.Models;             // NoteStorage, Note, Mood, NoteWriter, FileNames
+using System.Text.RegularExpressions;
 public static class NoteLinks
 {
     // Holds the two halves of a link: [[Title|display text]]
@@ -39,5 +40,22 @@ public static class NoteLinks
         // OrdinalIgnoreCase makes "run 5" match "Run 5".
         return notes.FirstOrDefault(n =>
             string.Equals(n.Title.Trim(), wanted, StringComparison.OrdinalIgnoreCase));
+    }
+    
+    // Finds every [[link]] in some text and returns the raw link texts, e.g. "[[Run 5|my 5k]]".
+// Each link appears once even if the note repeats it.
+    public static List<string> FindLinks(string? text)
+    {
+        var found = new List<string>();
+
+        // \[\[ and \]\] are literal brackets; (.+?) means "at least one character, as few as possible",
+        // so "[[a]] and [[b]]" gives two links instead of one big one.
+        foreach (Match m in Regex.Matches(text ?? "", @"\[\[(.+?)\]\]"))
+        {
+            if (!found.Contains(m.Value))
+                found.Add(m.Value);
+        }
+
+        return found;
     }
 }

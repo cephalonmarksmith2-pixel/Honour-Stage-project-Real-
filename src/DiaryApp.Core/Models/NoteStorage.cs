@@ -1,5 +1,5 @@
 namespace DiaryApp.Models;
-
+using System.Text.RegularExpressions;
 /// <summary>
 /// Reads and writes notes as .md files in one folder.
 /// Unsaved edits are kept as ".draft" files next to the real note, so a crash or a dead battery
@@ -125,7 +125,56 @@ public (Note note, bool created) OpenOrCreate(string title)
     var newNote = CreateNew(trimmed);
     return (newNote, true);
 }
+    // True if a note file already exists for this title.
+    // Uses PathFor, so "my note" and "my-note" count as the same file.
+    public bool TitleIsTaken(string title) => File.Exists(PathFor(title));
+    
+    // When a note is renamed, rewrite [[Old]] to [[New]] in every other note.
+// Returns how many notes were changed.
+    public int UpdateLinksAfterRename(string oldTitle, string newTitle)
+    {
+        string oldTrimmed = (oldTitle ?? "").Trim();
+        string newTrimmed = (newTitle ?? "").Trim();
 
+        // Nothing to do if there is no old title, or only the capitals changed.
+        if (oldTrimmed.Length == 0 || string.Equals(oldTrimmed, newTrimmed, StringComparison.OrdinalIgnoreCase))
+            return 0;
+
+        // Built once, because it only depends on the old title.
+        // Matches [[Old]], [[ old ]] and [[Old|any alias]] (group 1 is the "|alias" part, if there is one).
+        // Regex.Escape stops characters like "." or "(" in a title being treated as pattern rules.
+        string pattern = @"\[\[\s*" + Regex.Escape(oldTrimmed) + @"\s*(\|[^\]]*)?\]\]";
+
+        int changedCount = 0;
+
+        foreach (var note in LoadAll())
+        {
+            // Skip the renamed note itself: the editor page holds the live copy of it,
+            // and rewriting its file here would be overwritten by the editor's next save.
+            if (FileNames.MakeSafe(note.Title) == FileNames.MakeSafe(newTrimmed))
+                continue;
+
+            string text = note.NoteText ?? "";
+
+            // A function (m => ...) is used instead of a replacement string so a "$" in a
+            // title can't be misread. m.Groups[1].Value keeps the alias, or is "" without one.
+            string updated = Regex.Replace(
+                text,
+                pattern,
+                m => "[[" + newTrimmed + m.Groups[1].Value + "]]",
+                RegexOptions.IgnoreCase);
+
+            // Only touch the file if something really changed.
+            if (updated != text)
+            {
+                note.NoteText = updated;
+                Save(note);
+                changedCount++;
+            }
+        }
+
+        return changedCount;
+    }
     // ---------- Drafts ----------
 
     // Saves unsaved edits. The draft is filed under the title the note had when editing STARTED

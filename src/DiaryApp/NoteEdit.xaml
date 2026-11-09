@@ -10,13 +10,17 @@
     </ContentPage.ToolbarItems>
 
     <Grid>
-        <!-- Rows:    0 = title, 1 = mood + exercise + date, 2 = the text (takes all the remaining space)
+        <!-- Rows:    0 = title, 1 = mood + exercise + date, 2 = the text (takes all the remaining space),
+                      3 = links in this note, 4 = "Add link" button, 5 = link search panel (hidden until needed)
              Columns: three equal parts, so three controls can sit side by side.
-             Every box reports changes to OnAnyBoxChanged, which restarts the draft-save countdown. -->
+             Every editing box reports changes to OnAnyBoxChanged, which restarts the draft-save countdown. -->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -44,5 +48,45 @@
         <Editor x:Name="TextEditor" Placeholder="Write your note here..."
                 TextChanged="OnAnyBoxChanged"
                 Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="12,4" />
+
+        <!-- Links found in the text. Tapping one opens that note (or creates it).
+             MaximumHeightRequest stops a long list squashing the editor. -->
+        <CollectionView x:Name="LinksList"
+                        SelectionMode="Single"
+                        SelectionChanged="OnLinkTapped"
+                        MaximumHeightRequest="100"
+                        Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="12,0">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <!-- Each item is a plain string, so {Binding .} means "the item itself" -->
+                    <Label Text="{Binding .}" Padding="8,6" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button Text="Add link" Clicked="OnAddLinkClicked"
+                Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="12,4" />
+
+        <!-- Hidden until "Add link" is pressed. A hidden Auto row takes no space. -->
+        <VerticalStackLayout x:Name="LinkPanel" IsVisible="False"
+                             Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Margin="12,0,12,8">
+            <SearchBar x:Name="LinkSearch" Placeholder="Find a note to link..."
+                       TextChanged="OnLinkSearchChanged" />
+
+            <!-- Shown only when nothing matches exactly; the code sets its text and visibility -->
+            <Button x:Name="LinkCreateButton" IsVisible="False" Clicked="OnLinkCreateClicked" />
+
+            <CollectionView x:Name="LinkResults"
+                            SelectionMode="Single"
+                            SelectionChanged="OnLinkResultChosen"
+                            HeightRequest="160">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Each item is a Note, so bind to its Title -->
+                        <Label Text="{Binding Title}" Padding="8,6" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
     </Grid>
 </ContentPage>
