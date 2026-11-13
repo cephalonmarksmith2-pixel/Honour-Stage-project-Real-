@@ -1,12 +1,18 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="DiaryApp.Grath"
-             Title="Grath">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to Grath"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             x:Class="DiaryApp.Graph"
+             Title="Graph">
+
+    <!-- Row 0 is a slim bar with a Back button (hidden in the overview); row 1 is the graph, filling the rest -->
+    <Grid RowDefinitions="Auto,*">
+
+        <Button x:Name="BackButton" Text="Back to moods" IsVisible="False"
+                Clicked="OnBackClicked" Grid.Row="0" />
+
+        <!-- SizeChanged fires once the view knows its size. StartInteraction fires on a touch. -->
+        <GraphicsView x:Name="GraphView"
+                      SizeChanged="OnGraphSizeChanged"
+                      StartInteraction="OnGraphTapped"
+                      Grid.Row="1" />
+    </Grid>
 </ContentPage>
